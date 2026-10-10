@@ -1,0 +1,5 @@
+import { useState } from 'react';
+import { DocCard } from '../components/DocCard';
+import { api, errorMessage } from '../lib/api';
+import type { DocSummary } from '../lib/types';
+export function SearchPage(){const[q,setQ]=useState('');const[hits,setHits]=useState<DocSummary[]|null>(null);const[busy,setBusy]=useState(false);const[error,setError]=useState('');async function search(){if(!q.trim())return;setBusy(true);setError('');try{setHits((await api<{hits:DocSummary[]}>(`/api/search?q=${encodeURIComponent(q.trim())}`)).hits||[]);}catch(e){setError(errorMessage(e));}finally{setBusy(false);}}return <section className="show"><div className="card"><h2>检索文档</h2><p className="sub">在全部知识文档中按关键词加权匹配</p><input value={q} onChange={e=>setQ(e.target.value)} onKeyDown={e=>e.key==='Enter'&&search()} placeholder="输入关键词，回车检索，例如：发布流程" autoFocus/><div className="result">{busy?<div className="skeleton"><i/><i/><i/></div>:error?<div className="empty">检索失败：{error}</div>:hits?.length?hits.map(d=><DocCard key={d.path} doc={d}/>):hits?<div className="empty"><div className="orb"/>没有检索到相关文档</div>:null}</div></div></section>}
